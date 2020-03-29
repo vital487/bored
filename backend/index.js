@@ -10,6 +10,7 @@ const cors = require('cors')
 const fs = require('fs')
 const https = require('https')
 const bodyParser = require('body-parser')
+const upload = require('express-fileupload')
 
 
 //Add middleware that parses body that is 'application/json' to JSON and catch it's errors
@@ -23,9 +24,12 @@ app.use((req, res, next) => {
 //Add cors middleware
 app.use(cors())
 
+//Add express-fileupload middleware to take care of 'multipart-file' requests
+app.use(upload())
+
 //CONTROLLERS
 app.get('/', (req, res) => {
-    return res.send('Well played')
+    res.sendfile(__dirname + '/html/index.html')
 })
 
 const users = require('./controllers/users')
@@ -33,6 +37,9 @@ app.use('/api/users', users)
 
 const login = require('./controllers/login')
 app.use('/api/login', login)
+
+const posts = require('./controllers/posts')
+app.use('/api/posts', posts)
 
 //No route found
 app.use(function (req, res) {

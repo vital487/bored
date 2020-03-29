@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
  */
 router.post('/', (req, res) => {
     const schema = Joi.object({
-        username: Joi.string().max(20).min(3).required(),
+        username: Joi.string().trim().max(20).min(3).required(),
         password: Joi.string().min(3).max(20).required()
     })
 

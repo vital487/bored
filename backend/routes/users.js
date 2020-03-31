@@ -40,6 +40,7 @@ router.post('/', (req, res) => {
         db.query(insertUser, user, (err, result) => {
             if (err) return res.sendStatus(400)
             user.id = result.insertId
+            delete user.password
             return res.status(201).json(user)
         })
     })

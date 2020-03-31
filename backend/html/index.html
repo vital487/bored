@@ -6,8 +6,15 @@
 
 <body>
     Index html
-    <form action="/api/posts/image">
-
+    <form action="/api/posts/image" method="post">
+        <label>Image</label>
+        <input type="file" name="image" />
+        <input type="submit" />
+    </form>
+    <form action="/api/posts/video" method="post">
+        <label>Video</label>
+        <input type="file" name="video" />
+        <input type="submit" />
     </form>
 </body>
 

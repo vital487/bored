@@ -79,7 +79,7 @@ exports.getVerifyToken = (req, res, pub, next) => {
  * Generates new JWT based in a object
  */
 exports.generateToken = (res, data, priv, next) => {
-    jwt.sign(data, { key: priv, passphrase: '5440123718' }, { expiresIn: '2h', algorithm: 'RS256' }, (err, token) => {
+    jwt.sign(data, { key: priv, passphrase: '5440123718' }, { expiresIn: '1y', algorithm: 'RS256' }, (err, token) => {
         if (err) return res.status(403)
         next(token)
     });
@@ -92,4 +92,8 @@ exports.validateSchema = (req, res, schema, next) => {
     const validSchema = schema.validate(req.body)
     if (validSchema.error) return res.status(400).json(validSchema.error)
     next()
+}
+
+exports.isNumber = (n) => {
+    return !isNaN(parseFloat(n)) && !isNaN(n - 0)
 }

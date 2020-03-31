@@ -22,9 +22,12 @@ JSON
 
 #### Return
 
+JSON
+```
 {
-    token: <token>
+    token: token
 }
+```
 
 ## Users
 
@@ -64,7 +67,7 @@ POST /api/posts/text
 
 #### Authorization
 
-Bearer <token>
+Bearer token
 
 #### Body
 
@@ -105,7 +108,7 @@ Creates image post.
 
 #### Authorization
 
-Bearer <token>
+Bearer token
 
 #### Body
 
@@ -137,7 +140,7 @@ Creates video post.
 
 #### Authorization
 
-Bearer <token>
+Bearer token
 
 #### Body
 
@@ -169,7 +172,7 @@ DELETE /api/post/:post
 
 #### Authorization
 
-Bearer <token>
+Bearer token
 
 ### Reaction a post
 
@@ -181,7 +184,7 @@ Reacts to a post. If reaction does not exist, creates it. If exists and changes 
 
 #### Authorization
 
-Bearer <token>
+Bearer token
 
 #### Body
 

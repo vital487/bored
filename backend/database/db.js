@@ -39,21 +39,21 @@ CREATE TABLE `text_posts` (
   `id` int(11) NOT NULL,
   `text` text NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`id`) REFERENCES `posts` (`id`)
+  FOREIGN KEY (`id`) REFERENCES `posts` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `image_posts` (
   `id` int(11) NOT NULL,
   `path` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`id`) REFERENCES `posts` (`id`)
+  FOREIGN KEY (`id`) REFERENCES `posts` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `video_posts` (
   `id` int(11) NOT NULL,
   `path` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`id`) REFERENCES `posts` (`id`)
+  FOREIGN KEY (`id`) REFERENCES `posts` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `reactions` (
@@ -62,7 +62,7 @@ CREATE TABLE `reactions` (
   `user` varchar(20) NOT NULL,
   `reaction` set('amazing','good','meh','bad') NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`post`) REFERENCES `posts` (`id`),
+  FOREIGN KEY (`post`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`user`) REFERENCES `users` (`username`)
 );
 
@@ -73,7 +73,7 @@ CREATE TABLE `comments` (
   `comment` text NOT NULL,
   `created_at` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`post`) REFERENCES `posts` (`id`),
+  FOREIGN KEY (`post`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`user`) REFERENCES `users` (`username`)
 );
 

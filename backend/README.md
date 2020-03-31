@@ -59,6 +59,27 @@ JSON
 
 ## Posts
 
+### Get post
+
+#### Endpoint
+
+GET /api/posts/:post
+
+#### Return
+
+JSON
+```
+{
+    "post": {
+        "id": 1,
+        "user": "manel",
+        "created_at": 1585642389,
+        "type": "video",
+        "data": "feolkfjoeijewf"
+    }
+}
+```
+
 ### Create text post
 
 #### Endpoint
@@ -132,6 +153,8 @@ JSON
 }
 ```
 
+### Create videos post
+
 #### Endpoint
 
 POST /api/posts/video
@@ -174,7 +197,31 @@ DELETE /api/post/:post
 
 Bearer token
 
-### Reaction a post
+## Reactions
+
+### Get reactions from post
+
+#### Endpoint
+
+GET /api/posts/:post/reactions
+
+#### Return
+
+JSON
+```
+{
+    "reactions": [
+        {
+            "id": 3,
+            "post": 1,
+            "user": "manel",
+            "reaction": "amazing"
+        }
+    ]
+}
+```
+
+### Add reaction to post
 
 #### Endpoint
 
@@ -207,5 +254,71 @@ JSON
             user: "manel",
             reaction: "amazing"
         }
+}
+```
+
+## Comments
+
+### Get comments from post
+
+#### Endpoint
+
+GET /api/posts/:post/comments
+
+#### Return
+
+JSON
+```
+{
+    "comments": [
+        {
+            "id": 1,
+            "post": 1,
+            "user": "manel",
+            "comment": "really good",
+            "created_at": 1585656450
+        },
+        {
+            "id": 2,
+            "post": 1,
+            "user": "manel",
+            "comment": "it sucks",
+            "created_at": 1585656481
+        }
+    ]
+}
+```
+
+### Create comment
+
+#### Endpoint
+
+POST /api/posts/:post/comments
+
+#### Authorization
+
+Bearer token
+
+#### Body
+
+JSON
+```
+{
+    comment: Joi.string().trim().max(500).required()
+}
+```
+
+#### Return
+
+JSON
+```
+{
+    comment: {
+        id: 3,
+        post: 1,
+        user: "manel",
+        comment: "ehehe",
+        created_at: 1585663918
+    }
 }
 ```

@@ -2,13 +2,17 @@ const db = require('../index').db
 const keyPair = require('../index').keyPair
 const router = require('express').Router()
 const Joi = require('@hapi/joi')
+const fs = require('fs')
 const utils = require('../lib/utils')
 const uniqid = require('uniqid')
 const multer = require('multer')
 
+const IMAGEDIR = './files/images/'
+const VIDEODIR = './files/videos/'
+
 const imageStorage = multer.diskStorage({
     destination: (req, file, next) => {
-        next(null, './files/images/')
+        next(null, IMAGEDIR)
     },
     filename: (req, file, next) => {
         next(null, `${req.id}.${file.originalname.split('.')[1]}`)
@@ -17,7 +21,7 @@ const imageStorage = multer.diskStorage({
 
 const videoStorage = multer.diskStorage({
     destination: (req, file, next) => {
-        next(null, './files/videos/')
+        next(null, VIDEODIR)
     },
     filename: (req, file, next) => {
         next(null, `${req.id}.${file.originalname.split('.')[1]}`)
@@ -210,8 +214,11 @@ router.delete('/:post', (req, res) => {
         //Is post param a number?
         if (!utils.isNumber(req.params.post)) return res.sendStatus(400)
 
+        //Convert post from string to int
+        req.params.post = parseInt(req.params.post)
+
         //Does post and user exist?
-        let postUserExists = 'select p.type from posts p, user u where p.id = ? and p.user = ? and u.username = ?'
+        let postUserExists = 'select p.type from posts p, users u where p.id = ? and p.user = ? and u.username = ?'
 
         db.query(postUserExists, [req.params.post, req.user.username, req.user.username], (err, result) => {
             //Query error
@@ -220,27 +227,104 @@ router.delete('/:post', (req, res) => {
             if (result.length === 0) return res.sendStatus(400)
 
             //Delete post
-            let deletePost
+            let deletePost = 'delete from posts where id = ?'
 
-            switch (result[0].type) {
-                case 'text':
-                    deletePost = 'delete from text_posts where id = ?; delete from posts where id = ?'
-                    break;
-                case 'image':
-                    deletePost = 'delete from image_posts where id = ?; delete from posts where id = ?'
-                    break;
-                case 'video':
-                    deletePost = 'delete from video_posts where id = ?; delete from posts where id = ?'
-                    break;
-                default:
-            }
-
-            db.query(deletePost, [req.params.post, req.params.post], (err, result) => {
+            db.query(deletePost, req.params.post, (err, result) => {
                 //Query error
                 if (err) return res.sendStatus(400)
                 return res.sendStatus(204)
             })
         })
+    })
+})
+
+/**
+ * Get post
+ */
+router.get('/:post', (req, res) => {
+    //Is post param a number?
+    if (!utils.isNumber(req.params.post)) return res.sendStatus(400)
+
+    //Convert post from string to int
+    req.params.post = parseInt(req.params.post)
+
+    //Get post
+    let selectPostType = 'select type from posts where id = ?'
+
+    db.query(selectPostType, req.params.post, (err, result) => {
+        //Query error
+        if (err) return res.sendStatus(400)
+        //Post does not exist
+        if (result.length === 0) return res.sendStatus(400)
+
+        switch (result[0].type) {
+            case 'text':
+                let getTextPost = 'select p.id, p.user, p.created_at, p.type, t.text as data from posts p, text_posts t where p.id = t.id and t.id = ?'
+
+                db.query(getTextPost, req.params.post, (err, result) => {
+                    //Query error
+                    if (err) return res.sendStatus(400)
+                    //If no results
+                    if (result.length === 0) return res.sendStatus(400)
+                    return res.json({ post: result[0] })
+                })
+                break;
+            case 'image':
+                let getImage = 'select p.id, p.user, p.created_at, p.type, i.path as data from posts p, image_posts i where p.id = i.id and i.id = ?'
+
+                db.query(getImage, req.params.post, (err, result) => {
+                    //Query error
+                    if (err) return res.sendStatus(400)
+                    //If no results
+                    if (result.length === 0) return res.sendStatus(400)
+
+                    let post = result[0]
+
+                    let binary = fs.readFileSync(IMAGEDIR + post.data)
+                    //Binary data read from file to base64
+                    post.data = new Buffer.from(binary).toString('base64')
+                    return res.json({ post })
+                })
+                break;
+            case 'video':
+                let getVideo = 'select p.id, p.user, p.created_at, p.type, v.path as data from posts p, video_posts v where p.id = v.id and v.id = ?'
+
+                db.query(getVideo, req.params.post, (err, result) => {
+                    //Query error
+                    if (err) return res.sendStatus(400)
+                    //If no results
+                    if (result.length === 0) return res.sendStatus(400)
+
+                    let post = result[0]
+
+                    let binary = fs.readFileSync(VIDEODIR + post.data)
+                    //Binary data read from file to base64
+                    post.data = new Buffer.from(binary).toString('base64')
+                    return res.json({ post })
+                })
+                break;
+            default:
+        }
+    })
+})
+
+/**
+ * Returns post reactions
+ */
+router.get('/:post/reactions', (req, res) => {
+    //Is post param a number?
+    if (!utils.isNumber(req.params.post)) return res.sendStatus(400)
+
+    //Convert post from string to int
+    req.params.post = parseInt(req.params.post)
+
+    //Get reactions
+    let selectReactions = 'select * from reactions where post = ?'
+
+    db.query(selectReactions, req.params.post, (err, result) => {
+        //Query error
+        if (err) return res.sendStatus(400)
+        return res.json({ reactions: result })
     })
 })
 
@@ -329,6 +413,80 @@ router.post('/:post/reactions', (req, res) => {
             })
         })
     })
+})
+
+/**
+ * Create comment.
+ */
+router.post('/:post/comments', (req, res) => {
+    utils.getVerifyToken(req, res, keyPair.pub, () => {
+        const schema = Joi.object({
+            comment: Joi.string().trim().max(500).required()
+        })
+
+        utils.validateSchema(req, res, schema, () => {
+            //Is post param a number?
+            if (!utils.isNumber(req.params.post)) return res.sendStatus(400)
+
+            //Convert post from string to int
+        req.params.post = parseInt(req.params.post)
+
+            //Does post and user exist?
+            let postUserExists = 'select p.id from posts p, users u where p.id = ? and u.username = ?'
+
+            db.query(postUserExists, [req.params.post, req.user.username], (err, result) => {
+                //Query error
+                if (err) return res.sendStatus(400)
+                //If post or user does not exist
+                if (result.length === 0) return res.sendStatus(400)
+
+                //Insert new comment
+                let insertComment = 'insert into comments set ?'
+
+                let comment = {
+                    id: null,
+                    post: req.params.post,
+                    user: req.user.username,
+                    comment: req.body.comment,
+                    created_at: utils.getUnixTime()
+                }
+
+                db.query(insertComment, comment, (err, result) => {
+                    //Query error
+                    if (err) return res.sendStatus(400)
+                    comment.id = result.insertId
+                    return res.status(201).json({ comment })
+                })
+            })
+        })
+    })
+})
+
+/**
+ * Get post comments
+ */
+router.get('/:post/comments', (req, res) => {
+    //Is post param a number?
+    if (!utils.isNumber(req.params.post)) return res.sendStatus(400)
+
+    //Convert post from string to int
+    req.params.post = parseInt(req.params.post)
+
+    //Get reactions
+    let selectComments = 'select * from comments where post = ?'
+
+    db.query(selectComments, req.params.post, (err, result) => {
+        //Query error
+        if (err) return res.sendStatus(400)
+        return res.json({ comments: result })
+    })
+})
+
+/**
+ * Delete comment
+ */
+router.delete('/:post/comments/:comment', (req, res) => {
+    
 })
 
 module.exports = router

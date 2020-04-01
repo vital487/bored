@@ -46,7 +46,18 @@ router.post('/', (req, res) => {
  * Get user posts
  */
 router.get('/:username/posts', (req, res) => {
-    
+    //Check if username exists
+    let checkUsername = 'select id from users where username = ?'
+
+    db.query(checkUsername, req.params.username, (err, result) => {
+        //Query error
+        if (err) return res.sendStatus(400)
+        //If no results === if no user with that username
+        if (result.length === 0) return res.sendStatus(400)
+        
+        //Get posts from that user
+        let getPosts = 'select'
+    })
 })
 
 module.exports = router

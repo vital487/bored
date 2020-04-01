@@ -3,10 +3,6 @@ const router = require('express').Router()
 const Joi = require('@hapi/joi')
 const crypto = require('crypto')
 
-router.get('/', (req, res) => {
-    return res.send('Good job')
-})
-
 /**
  * Create new user
  */
@@ -44,6 +40,13 @@ router.post('/', (req, res) => {
             return res.status(201).json(user)
         })
     })
+})
+
+/**
+ * Get user posts
+ */
+router.get('/:username/posts', (req, res) => {
+    
 })
 
 module.exports = router

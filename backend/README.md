@@ -80,6 +80,43 @@ JSON
 }
 ```
 
+### Get posts from a specific user
+
+#### Endpoint
+
+GET /api//users/:username/posts
+
+#### Return
+
+JSON
+```
+{
+    "posts": [
+        {
+            "id": 3,
+            "user": "manel",
+            "created_at": 1585745475,
+            "type": "text",
+            "data": "post de bosta"
+        },
+        {
+            "id": 4,
+            "user": "manel",
+            "created_at": 1585745508,
+            "type": "image",
+            "data": "h65h56hj6j"
+        },
+        {
+            "id": 6,
+            "user": "manel",
+            "created_at": 1585745515,
+            "type": "video",
+            "data": "gtkrhrohh4"
+        }
+    ]
+}
+```
+
 ### Create text post
 
 #### Endpoint
@@ -322,3 +359,13 @@ JSON
     }
 }
 ```
+
+### Delete comment
+
+#### Endpoint
+
+POST /api/posts/:post/comments/:comment
+
+#### Authorization
+
+Bearer token

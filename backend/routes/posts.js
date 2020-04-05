@@ -233,7 +233,7 @@ router.delete('/:post', (req, res) => {
                     break;
                 case 'image':
                     let getImagePath = 'select path from image_posts where id = ?'
-    
+
                     db.query(getImagePath, req.params.post, (err, result) => {
                         //Query error
                         if (err) return res.sendStatus(400)
@@ -249,7 +249,7 @@ router.delete('/:post', (req, res) => {
                     break;
                 case 'video':
                     let getVideoPath = 'select path from video_posts where id = ?'
-    
+
                     db.query(getVideoPath, req.params.post, (err, result) => {
                         //Query error
                         if (err) return res.sendStatus(400)
@@ -266,7 +266,7 @@ router.delete('/:post', (req, res) => {
                 default:
             }
 
-            
+
         })
     })
 
@@ -473,7 +473,7 @@ router.post('/:post/comments', (req, res) => {
             if (!utils.isNumber(req.params.post)) return res.sendStatus(400)
 
             //Convert post from string to int
-        req.params.post = parseInt(req.params.post)
+            req.params.post = parseInt(req.params.post)
 
             //Does post and user exist?
             let postUserExists = 'select p.id from posts p, users u where p.id = ? and u.username = ?'
@@ -530,7 +530,37 @@ router.get('/:post/comments', (req, res) => {
  * Delete comment
  */
 router.delete('/:post/comments/:comment', (req, res) => {
-    
+    utils.getVerifyToken(req, res, keyPair.pub, () => {
+        //Is post param a number?
+        if (!utils.isNumber(req.params.post)) return res.sendStatus(400)
+
+        //Is comment param a number?
+        if (!utils.isNumber(req.params.comment)) return res.sendStatus(400)
+
+        //Convert post from string to int
+        req.params.post = parseInt(req.params.post)
+        //Convert comment from string to int
+        req.params.comment = parseInt(req.params.comment)
+
+        //Does post and user and comment exist?
+        let postUserCommentExists = 'select c.id from users u, comments c where c.id = ? and c.post = ? and c.user = ? and u.username = ?'
+
+        db.query(postUserCommentExists, [req.params.comment, req.params.post, req.user.username, req.user.username], (err, result) => {
+            //Query error
+            if (err) return res.sendStatus(400)
+            //If post, user or comment does not exist
+            if (result.length === 0) return res.sendStatus(400)
+            
+            //Delete comment
+            let deleteComment = 'delete from comments where id = ?'
+
+            db.query(deleteComment, req.params.comment, (err, result) => {
+                //Query error
+                if (err) return res.sendStatus(400)
+                return res.sendStatus(204)
+            })
+        })
+    })
 })
 
 module.exports = router

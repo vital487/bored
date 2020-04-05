@@ -55,6 +55,13 @@ const uploadVideo = multer({
     fileFilter: videoFilter
 })
 
+/*
+##########
+POSTS
+########## 
+*/
+
+
 /**
  * Create new text post
  */
@@ -353,6 +360,49 @@ router.get('/:post', (req, res) => {
 })
 
 /**
+ * Get 10 posts by page
+ */
+router.get('/', (req, res) => {
+    //Is page query a number?
+    if (!utils.isNumber(req.query.page)) return res.sendStatus(400)
+
+    //Convert page from string to int
+    req.query.page = parseInt(req.query.page)
+
+    //Get posts
+    let getPosts = 'select p.id, p.user, p.created_at, p.type, a.text as data from posts p, (select * from text_posts union all select * from image_posts u union all select * from video_posts) as a where p.id = a.id order by p.created_at desc limit ?, 10'
+
+    db.query(getPosts, req.query.page * 10, (err, result) => {
+        //Query error
+        if (err) return res.sendStatus(400)
+
+        //Get data from all files for image or video posts
+        for (let i = 0; i < result.length; i++) {
+            if (result[i].type === 'image') {
+                //Read image file
+                let binary = fs.readFileSync(IMAGEDIR + result[i].data)
+                //Binary data read from file to base64
+                result[i].data = new Buffer.from(binary).toString('base64')
+            }
+            else if (result[i].type === 'video') {
+                //Read video file
+                let binary = fs.readFileSync(VIDEODIR + result[i].data)
+                //Binary data read from file to base64
+                result[i].data = new Buffer.from(binary).toString('base64')
+            }
+        }
+
+        return res.json({ posts: result })
+    })
+})
+
+/*
+##########
+REACTIONS
+########## 
+*/
+
+/**
  * Returns post reactions
  */
 router.get('/:post/reactions', (req, res) => {
@@ -458,6 +508,12 @@ router.post('/:post/reactions', (req, res) => {
         })
     })
 })
+
+/*
+##########
+COMMENTS
+########## 
+*/
 
 /**
  * Create comment.

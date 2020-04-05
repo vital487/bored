@@ -80,11 +80,50 @@ JSON
 }
 ```
 
+### Get posts by page
+
+#### Endpoint
+
+GET /api/posts/?page=0
+
+Each page has 10 posts. Pages start on 0.
+
+#### Return
+
+JSON
+```
+{
+    "posts": [
+        {
+            "id": 6,
+            "user": "manel",
+            "created_at": 1585745515,
+            "type": "image",
+            "data": "fpwekfpoewgf"
+        },
+        {
+            "id": 4,
+            "user": "manel",
+            "created_at": 1585745508,
+            "type": "image",
+            "data": "grthtyjy"
+        },
+        {
+            "id": 3,
+            "user": "manel",
+            "created_at": 1585745475,
+            "type": "text",
+            "data": "post de bosta"
+        }
+    ]
+}
+```
+
 ### Get posts from a specific user
 
 #### Endpoint
 
-GET /api//users/:username/posts
+GET /api/users/:username/posts
 
 #### Return
 
